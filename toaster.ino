@@ -25,7 +25,7 @@ void loop() {
   int summed = lastThree[0] + lastThree[1] + lastThree[2];
   Serial.println(summed);
 
-  if(summed >= 1000){
+  if(summed >= 1000) {
     play();
     lastThree[0] = 0;
     lastThree[1] = 0;
