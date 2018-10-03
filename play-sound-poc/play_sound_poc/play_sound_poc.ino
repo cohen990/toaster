@@ -12,7 +12,7 @@
  ** MOSI - pin 11
  ** MISO - pin 12
  ** CLK - pin 13
- ** CS - pin 4
+ ** CS - pin 10
  
  created   Nov 2010
  by David A. Mellis
@@ -79,4 +79,3 @@ void play(){
     tmrpcm.play("ta.wav");
     Serial.println("Playback complete");
 }
-
