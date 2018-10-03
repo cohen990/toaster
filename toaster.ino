@@ -4,7 +4,6 @@
 #include <SD.h>
 
 /*
-  SD card read/write
  
  This example shows how to read and write data to and from an SD card file   
  The circuit:
@@ -13,26 +12,21 @@
  ** MISO - pin 12
  ** CLK - pin 13
  ** CS - pin 10
- 
- created   Nov 2010
- by David A. Mellis
- modified 9 Apr 2012
- by Tom Igoe
- 
- This example code is in the public domain.
-   
+ ** speaker - pin 9
+ ** switch - A0 in
+
  */
- 
+
 TMRpcm tmrpcm;
 File myFile;
 
-void setup()
-{
- // Open serial communications and wait for port to open:
+int lastThree[] = {0, 0, 0};
+int n = 0;
+
+// the setup routine runs once when you press reset:
+void setup() {
+  // initialize serial communication at 9600 bits per second:
   Serial.begin(9600);
-   while (!Serial) {
-    ; // wait for serial port to connect. Needed for Leonardo only
-  }
 
 
   Serial.print("Initializing SD card...");
@@ -55,21 +49,34 @@ void setup()
   // if the file opened okay, write to it:
   if (myFile) {
     Serial.print("Audio file found...");
-      tmrpcm.speakerPin = 9; //5,6,11 or 46 on Mega, 9 on Uno, Nano, etc
-      play();
+      tmrpcm.speakerPin = 9; 
     myFile.close();
     Serial.println("Audio file closed.");
   } else {
     // if the file didn't open, print an error:
     Serial.println("error opening audio file");
   }
+  int lastThree[] = {0, 0, 0};
+  n = 0;
 }
 
-void loop()
-{
-  if(Serial.available()){    
-    if(Serial.read() == 'p'){ //send the letter p over the serial monitor to start playback
+void loop() {
+  // read the input on analog pin 0:
+  int sensorValue = analogRead(A0);
+  // print out the value you read: 
+  n ++;
+
+  lastThree[n%3] = sensorValue;
+
+  int summed = lastThree[0] + lastThree[1] + lastThree[2];
+  Serial.println(summed);
+
+  if(summed >= 500) { 
+    if(!tmrpcm.isPlaying()) {
       play();
+      lastThree[0] = 0;
+      lastThree[1] = 0;
+      lastThree[2] = 0;
     }
   }
 }
