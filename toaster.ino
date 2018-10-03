@@ -1,54 +1,81 @@
-// note durations: 4 = quarter note, 8 = eighth note, etc.:
-int noteDurations[] = {
-  4, 8, 8, 4, 4, 4, 4, 4
-};
+#include <TMRpcm.h>
+#include <pcmRF.h>
+#include <pcmConfig.h>
+#include <SD.h>
 
-int lastThree[] = {0, 0, 0};
-int n = 0;
+/*
+  SD card read/write
+ 
+ This example shows how to read and write data to and from an SD card file   
+ The circuit:
+ * SD card attached to SPI bus as follows:
+ ** MOSI - pin 11
+ ** MISO - pin 12
+ ** CLK - pin 13
+ ** CS - pin 10
+ 
+ created   Nov 2010
+ by David A. Mellis
+ modified 9 Apr 2012
+ by Tom Igoe
+ 
+ This example code is in the public domain.
+   
+ */
+ 
+TMRpcm tmrpcm;
+File myFile;
 
-// the setup routine runs once when you press reset:
-void setup() {
-  // initialize serial communication at 9600 bits per second:
+void setup()
+{
+ // Open serial communications and wait for port to open:
   Serial.begin(9600);
-  int lastThree[] = {0, 0, 0};
-  n = 0;
-}
-
-void loop() {
-  // read the input on analog pin 0:
-  int sensorValue = analogRead(A0);
-  // print out the value you read: 
-  n ++;
-
-  lastThree[n%3] = sensorValue;
-
-  int summed = lastThree[0] + lastThree[1] + lastThree[2];
-  Serial.println(summed);
-
-  if(summed >= 1000) {
-    play();
-    lastThree[0] = 0;
-    lastThree[1] = 0;
-    lastThree[2] = 0;
+   while (!Serial) {
+    ; // wait for serial port to connect. Needed for Leonardo only
   }
-}
 
-void play() {
+
+  Serial.print("Initializing SD card...");
+  // On the Ethernet Shield, CS is pin 4. It's set as an output by default.
+  // Note that even if it's not used as the CS pin, the hardware SS pin 
+  // (10 on most Arduino boards, 53 on the Mega) must be left as an output 
+  // or the SD library functions will not work. 
+   pinMode(10, OUTPUT);
+   
+  if (!SD.begin(10)) {
+    Serial.println("initialization failed!");
+    return;
+  }
+  Serial.println("initialization done.");
   
-  // iterate over the notes of the melody:
-  for (int thisNote = 0; thisNote < 8; thisNote++) {
-
-    // to calculate the note duration, take one second divided by the note type.
-    //e.g. quarter note = 1000 / 4, eighth note = 1000/8, etc.
-    int noteDuration = 1000 / noteDurations[thisNote];
-    tone(8, 400, noteDuration);
-
-    // to distinguish the notes, set a minimum time between them.
-    // the note's duration + 30% seems to work well:
-    int pauseBetweenNotes = noteDuration * 1.30;
-    delay(pauseBetweenNotes);
-    // stop the tone playing:
-    noTone(8);
+  // open the file. note that only one file can be open at a time,
+  // so you have to close this one before opening another.
+  myFile = SD.open("ta.wav");
+  
+  // if the file opened okay, write to it:
+  if (myFile) {
+    Serial.print("Audio file found...");
+      tmrpcm.speakerPin = 9; //5,6,11 or 46 on Mega, 9 on Uno, Nano, etc
+      play();
+    myFile.close();
+    Serial.println("Audio file closed.");
+  } else {
+    // if the file didn't open, print an error:
+    Serial.println("error opening audio file");
   }
 }
 
+void loop()
+{
+  if(Serial.available()){    
+    if(Serial.read() == 'p'){ //send the letter p over the serial monitor to start playback
+      play();
+    }
+  }
+}
+
+void play(){
+    Serial.println("Beginning playback");
+    tmrpcm.play("ta.wav");
+    Serial.println("Playback complete");
+}
