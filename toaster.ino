@@ -14,7 +14,11 @@
  ** CS - pin 10
  ** speaker - pin 9
  ** switch - A0 in
-
+ ** 
+ ** TOASTER
+ * RED - 5V
+ * GREEN - A0
+ * GREEN WITH RESISTER - Ground Calibration
  */
 
 TMRpcm tmrpcm;
@@ -78,6 +82,9 @@ void loop() {
       lastThree[1] = 0;
       lastThree[2] = 0;
     }
+  }
+  if(!tmrpcm.isPlaying()) {
+    digitalWrite(9, 0);      
   }
 }
 
